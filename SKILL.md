@@ -9,7 +9,7 @@ description: "Complete SEO blog article writing workflow: research → outline �
 ## When to Use
 - Writing any blog article (comparison, how-to, listicle, guide, thought piece)
 - Creating long-form SEO content (2000+ words)
-- Producing content for filomail.com/blog or any website
+- Producing content for any website or blog
 
 ## Execution Model (IMPORTANT)
 
@@ -29,17 +29,17 @@ If running in main session directly (fallback only), exec permissions are alread
 **Never spawn without `security: "full"` — the subagent will silently skip QA and deliver an unverified draft.**
 
 ## Pre-Flight
-1. Read `filomail/product/` for current product facts
-2. Read `filomail/brand/` for voice and red lines
-3. Check `filomail/blog/plan/internal-links-map.md` for internal linking targets
-4. Check `filomail/blog/plan/content-plan.md` for where this article fits in the topic cluster
+1. Read your product documentation for current facts
+2. Read your brand guidelines for voice and red lines
+3. Check your internal links map for linking targets
+4. Check your content plan for where this article fits in the topic cluster
 
 ---
 
 ## Phase 1: Research (Before Writing)
 
 ### Keyword Research
-1. **Primary keyword** — The exact phrase we want to rank for (e.g., "best AI email apps 2026")
+1. **Primary keyword** — The exact phrase you want to rank for (e.g., "best project management tools 2026")
 2. **Secondary keywords** — Related phrases to include naturally (3-5)
 3. **Long-tail variants** — Question-form queries for FAQ section
 
@@ -47,23 +47,23 @@ If running in main session directly (fallback only), exec permissions are alread
 For the primary keyword, search Google and analyze top 5 results:
 - Word count of each
 - H2/H3 structure
-- What they cover that we should cover
-- What they miss that we can fill (content gap)
+- What they cover that you should cover
+- What they miss that you can fill (content gap)
 - External links they use (authority sources)
 
-Prefer the unified QA runner for normal draft review; it calls the bundled analyzer automatically and persists reports:
+Run QA analysis if you have the content-qa and seo-geo-qa skills installed:
 ```bash
-# Via Filo wrapper (auto-loads config):
-skills/content-qa/scripts/run_qa.sh path/to/draft.md --keyword "best email apps for mac"
+# Via unified QA runner (recommended):
+skills/content-qa/scripts/run_qa.sh path/to/draft.md --keyword "your primary keyword"
 
-# Or call generic runner directly:
-python3 skills/seo-geo-qa/scripts/seo_qa_runner.py path/to/draft.md --config filomail/seo-qa-config.json --keyword "best email apps for mac"
+# Or call SEO analyzer directly:
+python3 skills/seo-geo-qa/scripts/seo_qa_runner.py path/to/draft.md --config your-seo-config.json --keyword "your primary keyword"
 ```
 
-Use the lower-level analyzer only when debugging SERP gaps in isolation:
+Use the SERP gap analyzer for debugging specific competitive gaps:
 ```bash
-python3 skills/seo-geo-qa/scripts/serp_gap_analyzer.py "best email apps for mac" path/to/draft.md
-python3 skills/seo-geo-qa/scripts/serp_gap_analyzer.py "best email apps for mac" path/to/draft.md --urls https://competitor1.com https://competitor2.com
+python3 skills/seo-geo-qa/scripts/serp_gap_analyzer.py "your primary keyword" path/to/draft.md
+python3 skills/seo-geo-qa/scripts/serp_gap_analyzer.py "your primary keyword" path/to/draft.md --urls https://competitor1.com https://competitor2.com
 ```
 
 ### Search Intent Classification
@@ -75,7 +75,7 @@ python3 skills/seo-geo-qa/scripts/serp_gap_analyzer.py "best email apps for mac"
 | Navigational | brand name | Product-focused, feature deep-dive |
 
 ### Output: Research Brief
-Save to `filomail/blog/plan/` before writing:
+Save to your planning directory before writing:
 ```markdown
 ## Research Brief: [Title]
 - Primary keyword: 
@@ -169,8 +169,8 @@ Opening hook (150-200 words)
 - Link with descriptive anchor text (not "click here")
 - Link to related blog posts in the same topic cluster
 - Link to product/feature pages where natural
-- Follow hub-spoke pattern (see internal-links-map)
-- Consult `filomail/blog/plan/internal-links-map.md`
+- Follow hub-spoke pattern from your internal links map
+- Consult your internal linking strategy document
 
 ### External Linking Standards (Proportional)
 
@@ -214,8 +214,8 @@ For "Best X" / "X Alternatives" / "X vs Y" articles:
 - **Always include a comparison table** at the top
 - Each entry needs: Name, Price, Key Feature, Platforms, Best For
 - **Be honest about competitors** — acknowledge strengths
-- **Be honest about our weaknesses** — builds trust, ranks better
-- Position Filo first but earn it with real arguments
+- **Be honest about your product's weaknesses** — builds trust, ranks better
+- Position your product appropriately based on real merits
 - Include anchor IDs for each product section
 
 ---
@@ -244,15 +244,15 @@ Common AI patterns to eliminate:
 |---------|---------|-----|
 | Em-dash overuse | "The tool — which is powerful — works well" | Use commas or periods instead. Max 3 em-dashes per article. |
 | "Delve into" | "Let's delve into the features" | "Here's what it does" / "Let's look at" |
-| "Landscape" | "In today's email landscape" | Cut it. Be specific. |
+| "Landscape" | "In today's software landscape" | Cut it. Be specific. |
 | "Leverage" | "Leverage AI to improve" | "Use AI to improve" |
 | "Tapestry/Mosaic" | "A rich tapestry of features" | Just describe the features. |
-| "Revolutionize" | "Revolutionizing how you email" | "Changes how you email" |
+| "Revolutionize" | "Revolutionizing how you work" | "Changes how you work" |
 | "Game-changer" | "This is a game-changer" | Say what it actually changes. |
 | "Seamlessly" | "Seamlessly integrates" | "Integrates" or "works with" |
 | "Robust" | "A robust set of features" | "A full set of features" or just list them. |
-| "Elevate" | "Elevate your inbox experience" | "Improve" or describe the specific improvement. |
-| "Navigate" (metaphor) | "Navigate your inbox challenges" | "Deal with" / "Handle" / "Manage" |
+| "Elevate" | "Elevate your workflow experience" | "Improve" or describe the specific improvement. |
+| "Navigate" (metaphor) | "Navigate your productivity challenges" | "Deal with" / "Handle" / "Manage" |
 | "Harness" | "Harness the power of AI" | "Use AI to..." |
 | "Paradigm" | "A paradigm shift" | Describe the actual change. |
 | "Synergy" | "Create synergy between..." | "Works well with" or describe specifically. |
@@ -261,7 +261,7 @@ Common AI patterns to eliminate:
 | "Without further ado" | "Without further ado, here's..." | Just start. |
 | Triple-adjective stacking | "Powerful, intuitive, and elegant" | Pick one. Prove it. |
 | Rhetorical questions | "But what if there was a better way?" | State the better way. |
-| "In conclusion" / "In summary" | "In conclusion, Filo is the best" | Just make your point. |
+| "In conclusion" / "In summary" | "In conclusion, X is the best" | Just make your point. |
 
 **Self-check:** Read the article out loud. If any sentence sounds like a press release, rewrite it.
 
@@ -275,7 +275,7 @@ Common AI patterns to eliminate:
 1. Extract all URLs from the article
 2. Test each with `web_fetch` or `curl -sI`
 3. Check for: 404, 403, redirects to wrong content, paywalls
-4. For non-obvious external sources, run a source-quality spot check (AITDK/Ahrefs/search evidence)
+4. For non-obvious external sources, run a source-quality spot check
 
 ### Source Quality Spot Check
 For external sources that are not obviously authoritative, check whether they are worth citing:
@@ -297,7 +297,7 @@ Do **not** require perfect metrics. The goal is to catch weak, stale, spammy, or
 **Verified:** ✅ Same data confirmed
 ```
 
-### Quote & Attribution Verification (CRITICAL — learned the hard way)
+### Quote & Attribution Verification (CRITICAL)
 - If citing a review → verify the quote exists AND the article's overall tone matches your framing
 - **Tone match test:** Read the first 3 paragraphs of the source article. Is it positive, negative, or neutral?
   - Source is positive → quote freely
@@ -313,21 +313,30 @@ Do **not** require perfect metrics. The goal is to catch weak, stale, spammy, or
 
 **After completing Phase 5, ALWAYS run the QA runner before spawning a review agent or delivering the draft. Do not skip this. Do not ask whether to run it.**
 
+If you have the content-qa skill installed:
 ```bash
 skills/content-qa/scripts/run_qa.sh path/to/article.md --keyword "primary keyword"
 ```
 
-### What happens automatically
+### What happens automatically (if QA tools are available)
 1. All links verified (liveness + source quality tiering)
 2. Dead links, weak sources, moved links flagged
 3. FAQ count, external link count, SERP gap checked
-4. Markdown + JSON report saved to `filomail/blog/qa-reports/{slug}/`
+4. Markdown + JSON report saved
 5. Verdict: PASS or FAIL
 
+### If QA tools are not available
+Manually verify:
+- All external links work (no 404s, 403s, redirects to wrong content)
+- Primary keyword appears in H1 and first 100 words
+- Article meets minimum word count for its type
+- FAQ section is present for comparison articles
+- At least the minimum number of internal and external links
+
 ### If FAIL
-- Fix critical issues (dead links, too many TIER-D sources)
+- Fix critical issues (dead links, missing required elements)
 - Re-run until PASS
-- Max 3 rounds — if still failing, escalate to Justin with the report
+- Max 3 rounds — if still failing, escalate with the report
 
 ### If PASS
 - Proceed to Phase 7 (human review)
@@ -337,10 +346,10 @@ skills/content-qa/scripts/run_qa.sh path/to/article.md --keyword "primary keywor
 
 ## Phase 7: Review (Auto-Spawn)
 
-Per `skills/content-production/SKILL.md`, always spawn a review agent after Phase 6 passes. The review agent uses `skills/content-qa/SKILL.md` checklist.
+If you have the content-production skill, always spawn a review agent after Phase 6 passes. The review agent should use content-qa skill checklist if available.
 
 **Review must check:**
-- QA runner verdict is PASS (with report link)
+- QA runner verdict is PASS (if available) or manual verification complete
 - SEO checklist complete
 - Brand voice compliance
 - Factual accuracy (pricing, features)
@@ -352,33 +361,35 @@ Per `skills/content-production/SKILL.md`, always spawn a review agent after Phas
 ## File Conventions
 
 ### Where to Save
-- Research briefs: `filomail/blog/plan/brief-{slug}.md`
-- Article drafts: `filomail/blog/seo/{slug}.md` (SEO) or `filomail/blog/{slug}.md` (original)
+Adapt these paths to your project structure:
+- Research briefs: `blog/plan/brief-{slug}.md` 
+- Article drafts: `blog/seo/{slug}.md` or `blog/{slug}.md`
 - Article images: handled in website repo, not workspace
 
 ### Slug Format
 - Lowercase, hyphen-separated
 - Match target URL path: `/blog/{slug}`
 
-### Title Year Rules (2026-03-24 决策)
+### Title Year Rules
 
-| 文章类型 | 标题带年份？ | 原因 |
-|---------|:----------:|------|
-| **比较类** (best X, X alternatives) | ✅ 是 | 年份是搜索关键词的一部分（"best email app 2026"） |
-| **教育型 / How-to** | ❌ 否 | 搜索意图是常青的，年份反而限制文章寿命 |
-| **场景痛点** | ❌ 否 | 同上 |
-| **功能发布** | ❌ 否 | 功能不按年份搜索 |
-| **思想 / 署名文章** | ❌ 否 | 同上 |
+| Article Type | Include Year? | Reason |
+|-------------|:----------:|------|
+| **Comparison** (best X, X alternatives) | ✅ Yes | Year is part of search keywords ("best tools 2026") |
+| **Educational / How-to** | ❌ No | Search intent is evergreen, year limits article lifespan |
+| **Problem/scenario** | ❌ No | Same as above |
+| **Feature announcement** | ❌ No | Features aren't searched by year |
+| **Thought pieces** | ❌ No | Same as above |
 
-- 教育类文章的 freshness 信号放在文末 "Last updated: [Month Year]"
-- 比较类文章的年份每年 Q1 集中更新（标题 + 内容 + slug）
-- 参考：Anthropic claude.com/blog 零篇使用年份标题，全靠内容 freshness 信号
+- Educational articles use freshness signals at bottom: "Last updated: [Month Year]"
+- Comparison articles update year + content annually in Q1
+- Focus on content freshness signals rather than title years for evergreen content
 
 ---
 
 ## Related Skills
-- `content-production` — Mandatory produce → review → revise workflow
-- `content-qa` — QA checklist and review agent
+These OpenClaw skills work well with blog-writing:
+- `content-production` — Produce → review → revise workflow
+- `content-qa` — QA checklist and review agent  
 - `seo-audit` — Technical SEO checks for the whole site
 - `seo-geo` — GEO optimization for AI search engines
 - `competitor-alternatives` — Comparison page structure

@@ -16,7 +16,7 @@
 3. **Write** — body content following readability, keyword density, and brand voice standards
 4. **Optimize** — SEO checklist, AI writing pattern elimination, GEO/AEO authority signals
 5. **Link Verification** *(mandatory)* — every URL tested, dead/moved links replaced, source quality tiered
-6. **Automated QA** *(mandatory)* — runs `content-qa` skill's QA runner, produces a pass/fail report
+6. **Automated QA** *(mandatory)* — runs content-qa skill's QA runner if available, produces a pass/fail report
 7. **Review** — spawns a review sub-agent against the QA-passed draft
 
 ### Key Features
@@ -26,14 +26,14 @@
 - **AI pattern blocklist** — eliminates "delve", "leverage", "seamlessly", em-dash overuse, and 20+ other AI tells
 - **GEO/AEO optimization** — statistics with sources, expert citations, self-contained answer blocks for AI search engines
 - **Year-in-title rules** — comparison articles get years; evergreen how-to articles don't
-- **Automated QA runner** — shell-based, produces Markdown + JSON reports, PASS/FAIL verdict
+- **Automated QA runner** — shell-based when available, produces Markdown + JSON reports, PASS/FAIL verdict
 
 ### Requirements
 
 - [OpenClaw](https://openclaw.ai) installed and configured
-- [`content-qa`](https://clawhub.ai) skill installed (provides `run_qa.sh`)
-- [`seo-geo-qa`](https://clawhub.ai) skill installed (provides `seo_qa_runner.py`)
-- A `filomail/seo-qa-config.json` config file (or adapt to your site)
+- Optional but recommended: [`content-qa`](https://clawhub.ai) skill for automated QA
+- Optional but recommended: [`seo-geo-qa`](https://clawhub.ai) skill for technical SEO analysis
+- Your own SEO config file if using automated QA tools
 
 ### Installation
 
@@ -63,8 +63,8 @@ sessions_spawn(
 
 ### Output
 
-- Draft saved to `filomail/blog/seo/{slug}.md`
-- QA report saved to `filomail/blog/qa-reports/{slug}/qa-{timestamp}.md`
+- Draft saved to your configured blog directory (e.g., `blog/seo/{slug}.md`)
+- QA report saved to your configured reports directory (if QA tools available)
 - Cross-links added to related existing articles
 
 ### Customization
@@ -72,9 +72,9 @@ sessions_spawn(
 Edit `SKILL.md` to adapt:
 - Word count targets per article type
 - Internal/external link thresholds
-- Blocked AI writing patterns
-- QA config path (`filomail/seo-qa-config.json`)
-- Internal links map path
+- Blocked AI writing patterns list
+- File paths for your project structure
+- QA configuration paths
 
 ---
 
@@ -90,7 +90,7 @@ Edit `SKILL.md` to adapt:
 3. **写作** — 按可读性、关键词密度、品牌语气标准撰写正文
 4. **优化** — SEO checklist、消除 AI 写作模式、GEO/AEO 权威信号
 5. **链接验证**（强制）— 测试每一条 URL，替换死链/跳转链接，来源质量分级
-6. **自动化 QA**（强制）— 运行 `content-qa` skill 的 QA runner，生成通过/失败报告
+6. **自动化 QA**（强制）— 如果有 content-qa skill，运行 QA runner，生成通过/失败报告
 7. **审核** — 对通过 QA 的草稿派生一个审核 Sub-agent
 
 ### 核心特性
@@ -100,14 +100,14 @@ Edit `SKILL.md` to adapt:
 - **AI 写作模式黑名单** — 消除 "delve"、"leverage"、"seamlessly"、em-dash 滥用等 20+ 个 AI 特征词
 - **GEO/AEO 优化** — 带来源的数据统计、专家引用、独立可被 AI 搜索引擎提取的答案块
 - **标题年份规则** — 比较类文章带年份，常青型 how-to 文章不带
-- **自动化 QA runner** — Shell 脚本驱动，输出 Markdown + JSON 报告，PASS/FAIL 判定
+- **自动化 QA runner** — 如有工具则基于 Shell 脚本，输出 Markdown + JSON 报告，PASS/FAIL 判定
 
 ### 依赖
 
 - 已安装并配置 [OpenClaw](https://openclaw.ai)
-- 已安装 [`content-qa`](https://clawhub.ai) skill（提供 `run_qa.sh`）
-- 已安装 [`seo-geo-qa`](https://clawhub.ai) skill（提供 `seo_qa_runner.py`）
-- 存在 `filomail/seo-qa-config.json` 配置文件（或按你的站点适配）
+- 可选推荐：[`content-qa`](https://clawhub.ai) skill（提供自动化 QA）
+- 可选推荐：[`seo-geo-qa`](https://clawhub.ai) skill（提供技术 SEO 分析）
+- 如使用自动化 QA 工具，需要你自己的 SEO 配置文件
 
 ### 安装
 
@@ -137,8 +137,8 @@ sessions_spawn(
 
 ### 输出产物
 
-- 草稿保存至 `filomail/blog/seo/{slug}.md`
-- QA 报告保存至 `filomail/blog/qa-reports/{slug}/qa-{timestamp}.md`
+- 草稿保存至你配置的博客目录（如 `blog/seo/{slug}.md`）
+- QA 报告保存至你配置的报告目录（如有 QA 工具）
 - 自动在相关已有文章中添加交叉链接
 
 ### 自定义
@@ -147,8 +147,8 @@ sessions_spawn(
 - 各文章类型的目标字数
 - 内链/外链数量阈值
 - 禁用的 AI 写作模式列表
-- QA 配置文件路径（`filomail/seo-qa-config.json`）
-- 内链图谱路径
+- 你项目的文件路径结构
+- QA 配置文件路径
 
 ---
 
@@ -168,10 +168,24 @@ MIT
 
 | Skill | Purpose |
 |-------|---------|
-| `content-qa` | QA checklist and review agent (required) |
-| `seo-geo-qa` | Technical SEO + GEO QA runner (required) |
+| `content-qa` | QA checklist and review agent (recommended) |
+| `seo-geo-qa` | Technical SEO + GEO QA runner (recommended) |
 | `content-production` | Produce → review → revise workflow |
 | `seo-audit` | Full-site technical SEO audit |
 | `seo-geo` | GEO optimization for AI search engines |
 | `competitor-alternatives` | Comparison page structure guide |
 | `copy-editing` | Multi-pass editing framework |
+
+## Contributing
+
+This is a generic/universal version of the blog-writing skill. It's designed to work with any website or blog, not just specific companies or products.
+
+When contributing:
+- Keep examples generic ("your website", "your product")
+- Avoid hardcoded file paths — use configurable examples
+- Maintain broad compatibility across different blog setups
+- Test with different OpenClaw configurations
+
+---
+
+*Built for the OpenClaw AI agent ecosystem. Works best when combined with complementary content skills.*
