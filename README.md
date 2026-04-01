@@ -1,4 +1,4 @@
-# seo-blog-writer — OpenClaw SEO Blog Writing Skill
+# seo-blog-writer
 
 > Zero-friction SEO article writer. Provide a topic + domain — the skill auto-discovers product context, researches keywords, analyzes competitors, writes the article, verifies all links, and delivers publication-ready content. Works for any site, any industry, any CMS.
 
