@@ -1,6 +1,6 @@
-# blog-writing — OpenClaw SEO Blog Writing Skill
+# seo-blog-writer — OpenClaw SEO Blog Writing Skill
 
-> An OpenClaw skill for producing publication-ready SEO blog articles end-to-end: research → outline → write → optimize → QA → review.
+> Zero-friction SEO article writer. Provide a topic + domain — the skill auto-discovers product context, researches keywords, analyzes competitors, writes the article, verifies all links, and delivers publication-ready content. Works for any site, any industry, any CMS.
 
 ---
 
@@ -8,73 +8,99 @@
 
 ### What It Does
 
-`blog-writing` is a structured 7-phase workflow skill for AI-assisted SEO content production. It covers everything from keyword research to automated QA — and enforces quality gates before any draft is handed off for human review.
+`seo-blog-writer` is a fully automated 5-phase SEO content production skill. Give it a topic and a domain — it figures out the rest.
 
 **Phases:**
-1. **Research** — keyword analysis, competitive SERP review, search intent classification
-2. **Outline** — structured heading hierarchy, FAQ planning, internal link targets
-3. **Write** — body content following readability, keyword density, and brand voice standards
-4. **Optimize** — SEO checklist, AI writing pattern elimination, GEO/AEO authority signals
-5. **Link Verification** *(mandatory)* — every URL tested, dead/moved links replaced, source quality tiered
-6. **Automated QA** *(mandatory)* — runs content-qa skill's QA runner if available, produces a pass/fail report
-7. **Review** — spawns a review sub-agent against the QA-passed draft
+0. **Context Discovery** — crawls your site to auto-detect product, brand voice, existing content, and competitors. One human confirmation gate before writing starts.
+1. **Research Brief** — keyword intelligence, competitive gap analysis, linking strategy, article blueprint
+2. **Content Generation** — writes the full article with verified statistics, proper structure, and integrated links
+3. **AI Pattern Prevention** — scans for and eliminates AI writing tells, aligns with detected brand voice
+4. **Quality Assurance** — multi-dimensional scoring (SEO / Content / Linking / Brand), link verification, factual accuracy checks
+5. **Delivery Package** — final article + schema markup + QA report + promotion checklist
 
 ### Key Features
 
-- **Comparison table standard** — required for all best-of / alternatives articles
-- **External link proportionality** — 12–18 links for 5–7 product comparisons, 16–24 for 8+
-- **AI pattern blocklist** — eliminates "delve", "leverage", "seamlessly", em-dash overuse, and 20+ other AI tells
-- **GEO/AEO optimization** — statistics with sources, expert citations, self-contained answer blocks for AI search engines
-- **Year-in-title rules** — comparison articles get years; evergreen how-to articles don't
-- **Automated QA runner** — shell-based when available, produces Markdown + JSON reports, PASS/FAIL verdict
+- **Zero hardcoded dependencies** — works for any site, any industry, any CMS
+- **Minimum viable input** — just `topic` + `domain` to start
+- **Three modes** — Express (5-10min), Standard (15-20min), Expert (25-35min)
+- **One human checkpoint** — confirms keyword, structure, and plan before a single word is written
+- **Verified claims only** — every statistic and quote is confirmed against source before inclusion
+- **GEO/AEO optimized** — structured for AI search citation (ChatGPT, Perplexity, Google AI Overviews, Claude)
+- **AI pattern blocklist** — eliminates 20+ AI writing tells automatically
+- **Full link verification** — every URL tested, dead links replaced with alternatives
+- **Schema markup** — auto-generates Article + FAQPage JSON-LD
 
 ### Requirements
 
 - [OpenClaw](https://openclaw.ai) installed and configured
-- Optional but recommended: [`content-qa`](https://clawhub.ai) skill for automated QA
-- Optional but recommended: [`seo-geo-qa`](https://clawhub.ai) skill for technical SEO analysis
-- Your own SEO config file if using automated QA tools
+- No additional paid tools required — uses built-in `web_search` and `web_fetch`
 
 ### Installation
 
 ```bash
 # Via ClaWHub (recommended)
-clawhub install blog-writing
+clawhub install seo-blog-writer
 
-# Or manually — copy SKILL.md into your OpenClaw workspace skills folder
-cp SKILL.md ~/.openclaw/workspace/skills/blog-writing/SKILL.md
+# Or manually
+cp SKILL.md ~/.openclaw/workspace/skills/seo-blog-writer/SKILL.md
 ```
 
 ### Usage
 
-Trigger this skill by asking your OpenClaw agent to write a blog article. The agent reads `SKILL.md` and follows the full phase sequence automatically.
+**Minimum input:**
+```
+Write a blog article about "best email apps for productivity 2026" for https://yoursite.com
+```
+
+**With options:**
+```
+Write an SEO article:
+- topic: "gmail alternatives for privacy-conscious users"
+- domain: "https://yoursite.com"
+- mode: "expert"
+- product_context: "docs/product-brief.md"   ← skip auto-discovery
+```
 
 **Important — always spawn the writing sub-agent with `security: "full"`:**
-
 ```
 sessions_spawn(
-  task: "Write a blog article about [topic] targeting keyword [keyword]",
+  task: "Write a blog article about [topic] for [domain]",
   runtime: "subagent",
   security: "full"
 )
 ```
 
-> Without `security: "full"`, exec approval gates will block Phase 5 (link verification) and Phase 6 (QA runner). The sub-agent will silently skip both and deliver an unverified draft.
+> Without `security: "full"`, exec approval gates will block the QA phase. The sub-agent will silently skip verification and deliver an unverified draft.
+
+### Modes
+
+| Mode | Time | Quality Target | Best For |
+|------|------|---------------|----------|
+| **Express** | 5-10 min | 65+ score | Quick turnaround |
+| **Standard** | 15-20 min | 75+ score | Most articles |
+| **Expert** | 25-35 min | 85+ score | High-stakes keywords |
 
 ### Output
 
-- Draft saved to your configured blog directory (e.g., `blog/seo/{slug}.md`)
-- QA report saved to your configured reports directory (if QA tools available)
-- Cross-links added to related existing articles
+```
+seo-output/{article-slug}/
+├── article.md                 ← Final article with frontmatter
+├── qa-report.md               ← Score breakdown + link verification
+├── schema-markup.json         ← JSON-LD for CMS integration
+├── research-brief.md          ← Research + competitive analysis (Standard+)
+├── promotion-checklist.md     ← Post-publish marketing tasks (Standard+)
+├── internal-links-strategy.md ← Hub-spoke linking plan (Expert only)
+└── optimization-opportunities.md ← Future enhancements (Expert only)
+```
 
-### Customization
+### Failure Recovery
 
-Edit `SKILL.md` to adapt:
-- Word count targets per article type
-- Internal/external link thresholds
-- Blocked AI writing patterns list
-- File paths for your project structure
-- QA configuration paths
+Built-in resilience for common failure scenarios:
+- JS-heavy sites that block crawling → questionnaire fallback
+- Competitors that block fetching → search snippet proxy
+- Low keyword confidence → presents alternatives at confirmation gate
+- Failed link verification → auto-searches for replacement sources
+- QA score below threshold → specific improvement roadmap
 
 ---
 
@@ -82,73 +108,69 @@ Edit `SKILL.md` to adapt:
 
 ### 这个 Skill 做什么
 
-`blog-writing` 是一个结构化的 7 阶段工作流 Skill，用于 AI 辅助 SEO 内容生产。覆盖从关键词调研到自动化 QA 的完整流程，并在交付人工审核前强制执行质量门控。
+`seo-blog-writer` 是一个全自动 5 阶段 SEO 内容生产 Skill。提供一个话题和域名，它自动处理其余一切。
 
-**7 个阶段：**
-1. **调研** — 关键词分析、竞品 SERP 研究、搜索意图分类
-2. **大纲** — 标题层级结构、FAQ 规划、内链目标规划
-3. **写作** — 按可读性、关键词密度、品牌语气标准撰写正文
-4. **优化** — SEO checklist、消除 AI 写作模式、GEO/AEO 权威信号
-5. **链接验证**（强制）— 测试每一条 URL，替换死链/跳转链接，来源质量分级
-6. **自动化 QA**（强制）— 如果有 content-qa skill，运行 QA runner，生成通过/失败报告
-7. **审核** — 对通过 QA 的草稿派生一个审核 Sub-agent
+**5 个阶段：**
+0. **上下文发现** — 爬取你的站点，自动检测产品信息、品牌语气、现有内容和竞品。写作开始前唯一一次人工确认。
+1. **调研摘要** — 关键词洞察、竞品差距分析、链接策略、文章蓝图
+2. **内容生成** — 用已验证的数据、正确结构和集成链接写完整文章
+3. **AI 模式清除** — 扫描并消除 AI 写作特征词，对齐检测到的品牌语气
+4. **质量保证** — 多维度评分（SEO / 内容 / 链接 / 品牌），链接验证，事实准确性检查
+5. **交付包** — 最终文章 + Schema 标记 + QA 报告 + 推广 checklist
 
 ### 核心特性
 
-- **比较表标准** — 所有 best-of / alternatives 类文章必须包含比较表
-- **外链比例规范** — 5-7 个产品对比需 12-18 条外链，8 个以上需 16-24 条
-- **AI 写作模式黑名单** — 消除 "delve"、"leverage"、"seamlessly"、em-dash 滥用等 20+ 个 AI 特征词
-- **GEO/AEO 优化** — 带来源的数据统计、专家引用、独立可被 AI 搜索引擎提取的答案块
-- **标题年份规则** — 比较类文章带年份，常青型 how-to 文章不带
-- **自动化 QA runner** — 如有工具则基于 Shell 脚本，输出 Markdown + JSON 报告，PASS/FAIL 判定
+- **零硬编码依赖** — 适用于任何站点、任何行业、任何 CMS
+- **最小输入** — 只需 `topic` + `domain` 即可开始
+- **三种模式** — 快速（5-10分钟）、标准（15-20分钟）、专家（25-35分钟）
+- **唯一人工确认节点** — 在写第一个字之前确认关键词、结构和计划
+- **仅包含已验证声明** — 每条数据和引用都在纳入前经过来源确认
+- **GEO/AEO 优化** — 针对 AI 搜索引用结构化（ChatGPT、Perplexity、Google AI Overviews、Claude）
+- **AI 写作模式黑名单** — 自动消除 20+ 个 AI 特征词
+- **完整链接验证** — 测试每一条 URL，用替代来源替换死链
+- **Schema 标记** — 自动生成 Article + FAQPage JSON-LD
 
 ### 依赖
 
 - 已安装并配置 [OpenClaw](https://openclaw.ai)
-- 可选推荐：[`content-qa`](https://clawhub.ai) skill（提供自动化 QA）
-- 可选推荐：[`seo-geo-qa`](https://clawhub.ai) skill（提供技术 SEO 分析）
-- 如使用自动化 QA 工具，需要你自己的 SEO 配置文件
+- 无需额外付费工具 — 使用内置的 `web_search` 和 `web_fetch`
 
 ### 安装
 
 ```bash
 # 通过 ClaWHub 安装（推荐）
-clawhub install blog-writing
+clawhub install seo-blog-writer
 
-# 或手动安装 — 将 SKILL.md 复制到你的 OpenClaw workspace skills 目录
-cp SKILL.md ~/.openclaw/workspace/skills/blog-writing/SKILL.md
+# 或手动安装
+cp SKILL.md ~/.openclaw/workspace/skills/seo-blog-writer/SKILL.md
 ```
 
 ### 使用方法
 
-让你的 OpenClaw agent 写博客文章即可触发此 Skill。Agent 会读取 `SKILL.md` 并自动按完整阶段顺序执行。
+**最小输入：**
+```
+为 https://yoursite.com 写一篇关于"2026年最佳效率邮件应用"的博客文章
+```
+
+**带选项：**
+```
+写一篇 SEO 文章：
+- topic: "注重隐私用户的 Gmail 替代品"
+- domain: "https://yoursite.com"
+- mode: "expert"
+- product_context: "docs/product-brief.md"   ← 跳过自动发现
+```
 
 **重要 — 必须用 `security: "full"` 派生写作 Sub-agent：**
-
 ```
 sessions_spawn(
-  task: "写一篇关于 [主题] 的博客文章，目标关键词 [关键词]",
+  task: "为 [domain] 写一篇关于 [topic] 的博客文章",
   runtime: "subagent",
   security: "full"
 )
 ```
 
-> 不带 `security: "full"` 的话，exec 审批门会阻塞第 5 阶段（链接验证）和第 6 阶段（QA runner）。Sub-agent 会静默跳过这两个阶段，交付一个未验证的草稿。
-
-### 输出产物
-
-- 草稿保存至你配置的博客目录（如 `blog/seo/{slug}.md`）
-- QA 报告保存至你配置的报告目录（如有 QA 工具）
-- 自动在相关已有文章中添加交叉链接
-
-### 自定义
-
-编辑 `SKILL.md` 以适配：
-- 各文章类型的目标字数
-- 内链/外链数量阈值
-- 禁用的 AI 写作模式列表
-- 你项目的文件路径结构
-- QA 配置文件路径
+> 不带 `security: "full"` 的话，exec 审批门会阻塞 QA 阶段。Sub-agent 会静默跳过验证，交付未验证的草稿。
 
 ---
 
@@ -157,7 +179,7 @@ sessions_spawn(
 ```
 blog-writing-skill/
 ├── README.md     ← This file (EN + ZH)
-└── SKILL.md      ← The skill definition (OpenClaw reads this)
+└── SKILL.md      ← The skill definition v3.1.0 (OpenClaw reads this)
 ```
 
 ## License
@@ -168,24 +190,12 @@ MIT
 
 | Skill | Purpose |
 |-------|---------|
-| `content-qa` | QA checklist and review agent (recommended) |
-| `seo-geo-qa` | Technical SEO + GEO QA runner (recommended) |
-| `content-production` | Produce → review → revise workflow |
-| `seo-audit` | Full-site technical SEO audit |
 | `seo-geo` | GEO optimization for AI search engines |
-| `competitor-alternatives` | Comparison page structure guide |
-| `copy-editing` | Multi-pass editing framework |
-
-## Contributing
-
-This is a generic/universal version of the blog-writing skill. It's designed to work with any website or blog, not just specific companies or products.
-
-When contributing:
-- Keep examples generic ("your website", "your product")
-- Avoid hardcoded file paths — use configurable examples
-- Maintain broad compatibility across different blog setups
-- Test with different OpenClaw configurations
+| `content-qa` | Additional QA workflows |
+| `competitor-alternatives` | Specialized comparison page structures |
+| `programmatic-seo` | Scale across multiple pages |
+| `copy-editing` | Detailed editing and refinement |
 
 ---
 
-*Built for the OpenClaw AI agent ecosystem. Works best when combined with complementary content skills.*
+*Built for the OpenClaw AI agent ecosystem. Zero hardcoded dependencies — works for any site, any industry, any CMS.*
