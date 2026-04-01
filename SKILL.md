@@ -32,6 +32,30 @@ triggers:
 
 ---
 
+## Execution Model (IMPORTANT)
+
+This is a heavy, multi-phase skill. **Heavy Task Protocol is mandatory** — read and activate it before Phase 0:
+
+```
+read skills/heavy-task-protocol/SKILL.md
+```
+
+**When spawning as a subagent, always include `security: "full"`:**
+
+```
+sessions_spawn(
+  task: "SEO article: topic='[topic]' domain='[domain]' mode='[mode]'",
+  runtime: "subagent",
+  security: "full"   ← required for file writes (Phases 1–5) and link verification (Phase 4)
+)
+```
+
+If running in the main session directly, exec permissions are already sufficient — proceed normally.
+
+**Never spawn without `security: "full"` — the subagent will silently fail file writes and deliver an unverified draft.**
+
+---
+
 ## Failure Recovery Guardrails (Mandatory)
 
 For this skill, "done in one shot" is not trusted. Use bounded, resumable execution:
@@ -146,6 +170,8 @@ Priority 3 (blog ecosystem): /blog  /sitemap.xml  /robots.txt
 **JS-heavy site handling:** If web_fetch returns < 500 characters of meaningful
 text, note the crawl as failed for that page. Do not treat empty HTML as product
 context. Trigger questionnaire if ≥ 2 Priority 1 pages fail.
+
+**⚠️ Discovery failure threshold:** If ≥ 2 Priority 1 pages fail, jump to **Phase 0.6 immediately**. Collect answers from the user, then return here and continue with 0.2–0.4 using the provided context. Do not wait until after the confirmation gate to surface this.
 
 **Brand voice detection:**
 - Prefer blog post samples over homepage (more authentic voice)
@@ -385,15 +411,15 @@ reading company documentation:
 
 10. **Content to avoid:**
     [Anything we should never say, compare, or mention?]
+```
 
----
-💾 Save this as `product-context.md` and restart with:
-```
-topic: "[your topic]"
-domain: "[your domain]"
-product_context: "product-context.md"
-```
-```
+> 💾 Save the above as `product-context.md`, then restart with:
+>
+> ```yaml
+> topic: "[your topic]"
+> domain: "[your domain]"
+> product_context: "product-context.md"
+> ```
 
 ---
 
@@ -495,7 +521,7 @@ Examples:
 
 ### 1.3 Research Brief Output
 
-Save as: `{output_dir}/research-brief-{slug}.md`
+Save as: `{output_dir}/research-brief.md`
 
 ```markdown
 # Research Brief: [Article Title]
@@ -563,16 +589,16 @@ This is not a user gate — no user action required.
 
 ### ⚡ WRITE THE ARTICLE NOW
 
-Using the confirmed blueprint from Phase 1, write the complete article in one pass:
+Using the confirmed blueprint from Phase 1, write the article section by section:
 1. Write H1 (from blueprint)
 2. Write intro paragraph (≤ 100 words, keyword in first sentence, use intent-matched template from 2.1)
-3. Write each H2 section in order from blueprint, applying rules from 2.2-2.5 as you write
+3. Write each H2 section in order from blueprint, applying rules from 2.2-2.5 as you write. **After each H2, immediately run the 4-point AI-tell check from §3.1 inline** — fix any flagged sentences before moving to the next H2. Do not batch these checks.
 4. Write FAQ section (4-6 questions, natural language, schema-ready)
 5. Write conclusion with CTA referencing the domain's product/service
 6. Apply internal + external linking inline as you write (2.5 rules) - do NOT do a separate linking pass
 7. Save complete draft to: `{output_dir}/article-draft.md`
 
-Then proceed to Phase 3 (AI pattern check) on the saved draft.
+Then proceed to **Phase 3.2 and 3.3** (brand voice + authenticity check) on the saved draft. Phase 3.1 AI-tell checks were already run inline during step 3 above.
 
 ### 2.1 Opening Section (Critical First 100 Words)
 
@@ -1064,6 +1090,8 @@ Generate comprehensive QA documentation:
 - ✅ No AI writing patterns detected
 ```
 
+**If verdict is FAIL:** Fix ONLY the listed critical issues (targeted edits to `article-draft.md`), verify each fix with a read/grep, then re-run Phase 4. Maximum 3 rounds per Failure Recovery Guardrails §4. If still failing after 3 rounds, proceed to Phase 5 and flag unresolved issues in the delivery package.
+
 ---
 
 ## Phase 5: Delivery Package & Post-Processing
@@ -1092,6 +1120,8 @@ Content structure:
 ├─ Conclusion with CTA
 └─ "Last updated: [Month Year]"
 ```
+
+**Save instructions:** Write the finalized article (with frontmatter) to `{output_dir}/article.md`. Write the schema markup below to `{output_dir}/schema-markup.json`.
 
 **Schema markup generation:**
 ```
@@ -1168,6 +1198,30 @@ Based on competitive analysis and content quality:
 - **Ranking timeline:** [estimate based on domain authority and competition]
 - **Key ranking factors:** [what should drive success]
 - **Monitoring recommendations:** [what to track]
+```
+
+**internal-links-strategy.md** (expert only — export of Phase 1.2 analysis, enhanced post-writing):
+```markdown
+# Internal Links Strategy: [Article Title]
+
+## Hub-Spoke Position
+- **This article's role:** [hub | spoke | standalone]
+- **Cluster topic:** [topical cluster name]
+- **Hub page:** [URL if exists]
+
+## Links FROM This Article ([N] total)
+| Section | Anchor Text | Target URL | Relationship |
+|---------|-------------|------------|--------------|
+| [H2 name] | [anchor] | [url] | [sibling/hub/product] |
+
+## Links TO This Article (recommended)
+Pages that should link to this article:
+- [existing post title] → [URL] — reason: [topical overlap]
+- [existing post title] → [URL] — reason: [topical overlap]
+
+## Cluster Gaps Identified
+Articles not yet written that would strengthen this cluster:
+- [suggested topic] — would link to/from this article
 ```
 
 **promotion-checklist.md**:
