@@ -179,7 +179,7 @@ sessions_spawn(
 ```
 blog-writing-skill/
 ├── README.md     ← This file (EN + ZH)
-└── SKILL.md      ← The skill definition v3.1.0 (OpenClaw reads this)
+└── SKILL.md      ← The skill definition v2.2.0 (OpenClaw reads this)
 ```
 
 ## License
