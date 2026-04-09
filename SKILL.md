@@ -1,13 +1,13 @@
 ---
 name: seo-blog-writer
-version: 3.1.0
+version: 3.2.0
 description: |
-  Zero-friction SEO article writer. Provide a topic + domain - the skill
-  auto-discovers product context, researches keywords, analyzes competitors,
-  writes the article, verifies all links, and delivers publication-ready content.
+  Fully automated SEO article writer. Give it a topic and domain — it handles
+  everything: auto-discovers product context, researches keywords, analyzes
+  competitors, writes the article, verifies links, and delivers a complete
+  publication package (article + QA report + schema markup + promotion checklist).
+  One confirmation gate before writing starts, then hands-off execution.
   Works for any site, any industry, any CMS. No hardcoded dependencies.
-  MANDATORY: activate `skills/heavy-task-protocol/SKILL.md` before Phase 0
-  for checkpointing, resume safety, and failure recovery.
 triggers:
   - "write a blog post"
   - "SEO article"
@@ -16,11 +16,18 @@ triggers:
   - "comparison article"
   - "alternatives page"
   - "how-to guide"
+external_access:
+  - type: web_search
+    description: "SERP analysis — searches Google/Bing/DDG for competitor URLs and keyword data. No API key required; uses the agent's built-in web search tool."
+  - type: web_fetch
+    description: "Link verification — checks that external URLs in the article are live. No API key required."
+permissions:
+  - disk_write: "Writes article draft, QA report, and schema file to local disk (crash-safe incremental execution). Output directory is user-configurable."
 ---
 
 # AI-Driven SEO Blog Writer
 
-> **Heavy Task Protocol active.** This skill generates a long artifact across multiple phases. Follow `skills/heavy-task-protocol/SKILL.md`: create a task-logs workspace before Phase 0, write phase outputs to disk incrementally, use offset reads for verification.
+> **Long-running task mode.** This skill generates a multi-phase artifact. Before Phase 0: create a `task-logs/{slug}/` workspace, write each phase output to disk incrementally, and use offset reads to verify writes. This ensures crash-safe, resumable execution without regenerating completed work.
 
 ## Design Principles
 
@@ -32,13 +39,33 @@ triggers:
 
 ---
 
+## Execution Model (IMPORTANT)
+
+This is a heavy, multi-phase skill. Incremental disk writes and offset-read verification are mandatory — see the long-running task note above.
+
+**When spawning as a subagent, file writes and link verification (Phases 1–5) require exec permissions:**
+
+```
+sessions_spawn(
+  task: "SEO article: topic='[topic]' domain='[domain]' mode='[mode]'",
+  runtime: "subagent",
+  security: "full"   ← needed for disk writes and curl-based link checks
+)
+```
+
+If running in the main session directly, exec permissions are already present — proceed normally.
+
+> **Why `security: "full"`?** This skill writes article drafts, QA reports, and schema files to disk incrementally (crash-safe execution). Link verification uses `curl`/`web_fetch` to check URLs. Both operations require exec access. If you prefer not to grant this, run the skill in your main session rather than as a subagent — behavior is identical.
+
+---
+
 ## Failure Recovery Guardrails (Mandatory)
 
 For this skill, "done in one shot" is not trusted. Use bounded, resumable execution:
 
 1. **Section-by-section writes**
 - Write article sections incrementally (intro, each H2 block, FAQ, conclusion).
-- After each section write, append checkpoint to `task-logs/.../report.md`.
+- After each section write, append checkpoint to `task-logs/{slug}/report.md` (or your preferred output dir).
 
 2. **Write-then-read verification**
 - After every `write`/`edit`, run a targeted read/grep to confirm the change exists.
@@ -77,7 +104,7 @@ output_dir: "."                            # default: ./seo-output/{slug}/
 **Examples:**
 - "Write a comparison article about email apps for mysite.com"
 - "I need a how-to guide about email automation for https://example.com"
-- "Create an alternatives page for Gmail for our domain filomail.com"
+- "Create an alternatives page for Gmail for our domain yoursite.com"
 
 ---
 
@@ -146,6 +173,8 @@ Priority 3 (blog ecosystem): /blog  /sitemap.xml  /robots.txt
 **JS-heavy site handling:** If web_fetch returns < 500 characters of meaningful
 text, note the crawl as failed for that page. Do not treat empty HTML as product
 context. Trigger questionnaire if ≥ 2 Priority 1 pages fail.
+
+**⚠️ Discovery failure threshold:** If ≥ 2 Priority 1 pages fail, jump to **Phase 0.6 immediately**. Collect answers from the user, then return here and continue with 0.2–0.4 using the provided context. Do not wait until after the confirmation gate to surface this.
 
 **Brand voice detection:**
 - Prefer blog post samples over homepage (more authentic voice)
@@ -353,7 +382,7 @@ reading company documentation:
 ## Required Information (4 questions - 2 minutes)
 
 1. **Product name:**
-   [What do you call your product? e.g., "FiloMail"]
+   [What do you call your product? e.g., "YourProduct"]
 
 2. **One-sentence description:**
    [What does it do, for whom? e.g., "AI email client for knowledge workers who get 100+ emails/day"]
@@ -385,15 +414,15 @@ reading company documentation:
 
 10. **Content to avoid:**
     [Anything we should never say, compare, or mention?]
+```
 
----
-💾 Save this as `product-context.md` and restart with:
-```
-topic: "[your topic]"
-domain: "[your domain]"
-product_context: "product-context.md"
-```
-```
+> 💾 Save the above as `product-context.md`, then restart with:
+>
+> ```yaml
+> topic: "[your topic]"
+> domain: "[your domain]"
+> product_context: "product-context.md"
+> ```
 
 ---
 
@@ -495,7 +524,7 @@ Examples:
 
 ### 1.3 Research Brief Output
 
-Save as: `{output_dir}/research-brief-{slug}.md`
+Save as: `{output_dir}/research-brief.md`
 
 ```markdown
 # Research Brief: [Article Title]
@@ -563,16 +592,16 @@ This is not a user gate — no user action required.
 
 ### ⚡ WRITE THE ARTICLE NOW
 
-Using the confirmed blueprint from Phase 1, write the complete article in one pass:
+Using the confirmed blueprint from Phase 1, write the article section by section:
 1. Write H1 (from blueprint)
 2. Write intro paragraph (≤ 100 words, keyword in first sentence, use intent-matched template from 2.1)
-3. Write each H2 section in order from blueprint, applying rules from 2.2-2.5 as you write
+3. Write each H2 section in order from blueprint, applying rules from 2.2-2.5 as you write. **After each H2, immediately run the 4-point AI-tell check from §3.1 inline** — fix any flagged sentences before moving to the next H2. Do not batch these checks.
 4. Write FAQ section (4-6 questions, natural language, schema-ready)
 5. Write conclusion with CTA referencing the domain's product/service
 6. Apply internal + external linking inline as you write (2.5 rules) - do NOT do a separate linking pass
 7. Save complete draft to: `{output_dir}/article-draft.md`
 
-Then proceed to Phase 3 (AI pattern check) on the saved draft.
+Then proceed to **Phase 3.2 and 3.3** (brand voice + authenticity check) on the saved draft. Phase 3.1 AI-tell checks were already run inline during step 3 above.
 
 ### 2.1 Opening Section (Critical First 100 Words)
 
@@ -740,7 +769,7 @@ Linking philosophy: Every mentioned entity gets its official link, every factual
 
 For each product/tool mentioned:
 ├─ Link to official site (once per unique entity, not every mention)
-├─ Use descriptive anchor text: "FiloMail's AI features" not "click here"
+├─ Use descriptive anchor text: "YourProduct's key features" not "click here"
 └─ Open in new tab considerations for user experience
 
 For each factual claim:
@@ -1064,6 +1093,8 @@ Generate comprehensive QA documentation:
 - ✅ No AI writing patterns detected
 ```
 
+**If verdict is FAIL:** Fix ONLY the listed critical issues (targeted edits to `article-draft.md`), verify each fix with a read/grep, then re-run Phase 4. Maximum 3 rounds per Failure Recovery Guardrails §4. If still failing after 3 rounds, proceed to Phase 5 and flag unresolved issues in the delivery package.
+
 ---
 
 ## Phase 5: Delivery Package & Post-Processing
@@ -1092,6 +1123,8 @@ Content structure:
 ├─ Conclusion with CTA
 └─ "Last updated: [Month Year]"
 ```
+
+**Save instructions:** Write the finalized article (with frontmatter) to `{output_dir}/article.md`. Write the schema markup below to `{output_dir}/schema-markup.json`.
 
 **Schema markup generation:**
 ```
@@ -1168,6 +1201,30 @@ Based on competitive analysis and content quality:
 - **Ranking timeline:** [estimate based on domain authority and competition]
 - **Key ranking factors:** [what should drive success]
 - **Monitoring recommendations:** [what to track]
+```
+
+**internal-links-strategy.md** (expert only — export of Phase 1.2 analysis, enhanced post-writing):
+```markdown
+# Internal Links Strategy: [Article Title]
+
+## Hub-Spoke Position
+- **This article's role:** [hub | spoke | standalone]
+- **Cluster topic:** [topical cluster name]
+- **Hub page:** [URL if exists]
+
+## Links FROM This Article ([N] total)
+| Section | Anchor Text | Target URL | Relationship |
+|---------|-------------|------------|--------------|
+| [H2 name] | [anchor] | [url] | [sibling/hub/product] |
+
+## Links TO This Article (recommended)
+Pages that should link to this article:
+- [existing post title] → [URL] — reason: [topical overlap]
+- [existing post title] → [URL] — reason: [topical overlap]
+
+## Cluster Gaps Identified
+Articles not yet written that would strengthen this cluster:
+- [suggested topic] — would link to/from this article
 ```
 
 **promotion-checklist.md**:
@@ -1341,13 +1398,13 @@ Additional capabilities when time permits:
 **Input:**
 ```
 topic: "best email apps for productivity 2026"
-domain: "https://filomail.com"
+domain: "https://yoursite.com"
 mode: "standard"
 ```
 
 **Phase 0 Output:**
 ```
-Product: FiloMail (AI email client)
+Product: YourProduct (SaaS tool)
 Intent: comparison → need comparison table + detailed reviews
 Target: 2800 words (SERP average: 2500)
 Competitors: Superhuman, Spark, Apple Mail, Thunderbird, Outlook
@@ -1358,7 +1415,7 @@ Voice: Professional (3/5), Energetic (4/5), Technical (3/5)
 ```
 H1: Best Email Apps for Productivity 2026 - Tested by Power Users
 ├─ Quick Comparison Table (8 apps)
-├─ FiloMail: Best for AI-Powered Email Management
+├─ YourProduct: Best for AI-Powered Email Management
 ├─ Superhuman: Best for Speed and Keyboard Shortcuts
 ├─ Spark: Best for Team Collaboration
 ├─ How to Choose the Right Email App for Your Workflow
